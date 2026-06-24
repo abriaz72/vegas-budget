@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vegas Trip Budget — Jun 28 – Jul 10</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #222222;
+    --border: #2e2e2e;
+    --text: #e8e8e8;
+    --text-dim: #888;
+    --text-faint: #555;
+    --gold: #c9a84c;
+    --gold-dim: #8a6f2e;
+    --green: #4caf7d;
+    --red: #e05c5c;
+    --amber: #e09a3a;
+    --blue: #5b9bd5;
+    --font-mono: 'DM Mono', monospace;
+    --font-sans: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px 16px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .header-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .header-dates {
+    font-size: 22px;
+    font-weight: 300;
+    color: var(--text);
+    margin-top: 2px;
+  }
+
+  .fx-block {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .fx-block input {
+    width: 60px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 4px 7px;
+    border-radius: 4px;
+    text-align: right;
+  }
+
+  .fx-block input:focus { outline: 1px solid var(--gold); }
+
+  /* ── Dashboard ── */
+  .dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .kpi {
+    background: var(--surface);
+    padding: 18px 20px;
+  }
+
+  .kpi-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 6px;
+  }
+
+  .kpi-value {
+    font-family: var(--font-mono);
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .kpi-value.green { color: var(--green); }
+  .kpi-value.red { color: var(--red); }
+  .kpi-value.amber { color: var(--amber); }
+  .kpi-value.gold { color: var(--gold); }
+
+  .kpi-sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 3px;
+  }
+
+  /* ── Budget bar ── */
+  .budget-bar-wrap {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .budget-bar-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  .budget-bar-track {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .budget-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+
+  /* ── Layout ── */
+  .main {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: calc(100vh - 200px);
+  }
+
+  nav {
+    border-right: 1px solid var(--border);
+    padding: 20px 0;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text-dim);
+    border-left: 2px solid transparent;
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+
+  .nav-item.active {
+    color: var(--gold);
+    border-left-color: var(--gold);
+    background: var(--surface2);
+    font-weight: 500;
+  }
+
+  .nav-amount {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-faint);
+  }
+
+  .nav-item.active .nav-amount { color: var(--gold-dim); }
+
+  /* ── Sections ── */
+  .section {
+    display: none;
+    padding: 24px;
+  }
+
+  .section.active { display: block; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-title {
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .section-total {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    color: var(--gold);
+  }
+
+  /* ── Add form ── */
+  .add-form {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+    align-items: end;
+  }
+
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+
+  .form-group label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  .form-group input,
+  .form-group select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    padding: 7px 9px;
+    border-radius: 4px;
+    width: 100%;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    outline: 1px solid var(--gold);
+    border-color: var(--gold);
+  }
+
+  .form-group select option { background: var(--surface2); }
+
+  .btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 500;
+    transition: opacity 0.15s;
+    align-self: end;
+  }
+
+  .btn:hover { opacity: 0.85; }
+  .btn-gold { background: var(--gold); color: #000; }
+  .btn-ghost { background: var(--surface2); color: var(--text-dim); border: 1px solid var(--border); }
+  .btn-danger { background: transparent; color: var(--red); border: none; font-size: 16px; padding: 4px 8px; cursor: pointer; }
+  .btn-danger:hover { color: #ff8888; }
+
+  /* ── Table ── */
+  .entries-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .entries-table th {
+    text-align: left;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .entries-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    vertical-align: middle;
+  }
+
+  .entries-table tr:last-child td { border-bottom: none; }
+  .entries-table tr:hover td { background: var(--surface2); }
+
+  .mono { font-family: var(--font-mono); }
+  .tag {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+  .tag-gbp { background: #2a3d2e; color: var(--green); }
+  .tag-usd { background: #2d3a1f; color: #9ecf6a; }
+  .tag-win { background: #1e3a2a; color: var(--green); }
+  .tag-loss { background: #3a1e1e; color: var(--red); }
+  .tag-neutral { background: var(--surface2); color: var(--text-dim); }
+
+  .net-positive { color: var(--green); font-family: var(--font-mono); }
+  .net-negative { color: var(--red); font-family: var(--font-mono); }
+  .net-neutral { color: var(--text-dim); font-family: var(--font-mono); }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-faint);
+    font-size: 13px;
+  }
+
+  /* ── Budget setting ── */
+  .budget-set-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+  }
+
+  .budget-set-form label {
+    font-size: 11px;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+
+  .budget-set-form input {
+    width: 120px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    padding: 6px 9px;
+    border-radius: 4px;
+  }
+
+  .budget-set-form input:focus { outline: 1px solid var(--gold); }
+
+  /* Category breakdown bar */
+  .cat-breakdown {
+    margin-top: 24px;
+  }
+
+  .cat-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .cat-row:last-child { border-bottom: none; }
+
+  .cat-label {
+    width: 120px;
+    font-size: 12px;
+    color: var(--text-dim);
+    flex-shrink: 0;
+  }
+
+  .cat-bar-track {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .cat-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--gold);
+  }
+
+  .cat-amount {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text);
+    width: 70px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* Forecast note */
+  .forecast-note {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 16px;
+    line-height: 1.7;
+  }
+
+  .forecast-note strong { color: var(--text); }
+
+  @media (max-width: 640px) {
+    .main { grid-template-columns: 1fr; }
+    nav { border-right: none; border-bottom: 1px solid var(--border); padding: 8px 0; display: flex; overflow-x: auto; }
+    .nav-item { white-space: nowrap; border-left: none; border-bottom: 2px solid transparent; }
+    .nav-item.active { border-left-color: transparent; border-bottom-color: var(--gold); }
+    .add-form { grid-template-columns: 1fr 1fr; }
+    .dashboard { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="header-title">Trip Budget Tracker</div>
+    <div class="header-dates">Las Vegas · Jun 28 – Jul 10</div>
+  </div>
+  <div class="fx-block">
+    <span>£1 =</span>
+    <input type="number" id="fxRate" step="0.01" value="1.28">
+    <span>USD &nbsp;<span id="fxUpdated" style="color:var(--text-faint);font-size:11px;"></span></span>
+    <button class="btn btn-ghost" style="padding:4px 10px;font-size:11px;" onclick="saveFX()">Update</button>
+  </div>
+</header>
+
+<div class="dashboard" id="dashboard"></div>
+
+<div class="budget-bar-wrap">
+  <div class="budget-bar-header">
+    <span>Budget used</span>
+    <span style="display:flex;align-items:center;gap:8px;">
+      <span style="color:var(--text-faint);font-size:11px;">Total budget £</span>
+      <input type="number" id="budgetBarInput" step="100" placeholder="e.g. 12500"
+        style="width:90px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--font-mono);font-size:12px;padding:3px 7px;border-radius:4px;"
+        onchange="saveBudgetInline()">
+      <span id="barLabel" style="color:var(--text-dim);">—</span>
+    </span>
+  </div>
+  <div class="budget-bar-track">
+    <div class="budget-bar-fill" id="budgetBarFill" style="width:0%;background:var(--green);"></div>
+  </div>
+</div>
+
+<div class="main">
+  <nav>
+    <div class="nav-item active" data-section="overview" onclick="switchSection('overview')">
+      <span>Overview</span><span class="nav-amount" id="nav-overview"></span>
+    </div>
+    <div class="nav-item" data-section="travel" onclick="switchSection('travel')">
+      <span>✈ Travel</span><span class="nav-amount" id="nav-travel"></span>
+    </div>
+    <div class="nav-item" data-section="hotel" onclick="switchSection('hotel')">
+      <span>🏨 Hotel</span><span class="nav-amount" id="nav-hotel"></span>
+    </div>
+    <div class="nav-item" data-section="food" onclick="switchSection('food')">
+      <span>🍔 Food</span><span class="nav-amount" id="nav-food"></span>
+    </div>
+    <div class="nav-item" data-section="poker" onclick="switchSection('poker')">
+      <span>🃏 Poker</span><span class="nav-amount" id="nav-poker"></span>
+    </div>
+    <div class="nav-item" data-section="casino" onclick="switchSection('casino')">
+      <span>🎰 Casino</span><span class="nav-amount" id="nav-casino"></span>
+    </div>
+    <div class="nav-item" data-section="other" onclick="switchSection('other')">
+      <span>📦 Other</span><span class="nav-amount" id="nav-other"></span>
+    </div>
+  </nav>
+
+  <!-- OVERVIEW -->
+  <div class="section active" id="section-overview">
+    <div class="section-header">
+      <span class="section-title">Overview</span>
+    </div>
+    <div class="cat-breakdown" id="catBreakdown"></div>
+    <div class="forecast-note" id="forecastNote"></div>
+    <div style="margin-top:32px;padding-top:20px;border-top:1px solid var(--border);text-align:right;">
+      <button class="btn btn-ghost" style="font-size:11px;color:var(--text-faint);border-color:var(--border);" onclick="resetAll()">⟳ Reset all data</button>
+    </div>
+  </div>
+
+  <!-- TRAVEL -->
+  <div class="section" id="section-travel">
+    <div class="section-header">
+      <span class="section-title">Travel</span>
+      <span class="section-total" id="travel-total">£0.00</span>
+    </div>
+    <div class="add-form">
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="travel-date">
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <input type="text" id="travel-desc" placeholder="e.g. BA flight LHR-LAS">
+      </div>
+      <div class="form-group">
+        <label>Amount</label>
+        <input type="number" id="travel-amount" step="0.01" placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label>Currency</label>
+        <select id="travel-currency">
+          <option value="GBP">£ GBP</option>
+          <option value="USD">$ USD</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="travel-paid">
+          <option value="unpaid">Unpaid</option>
+          <option value="paid">Paid</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Payment</label>
+        <select id="travel-payment">
+          <option value="Wise">Wise</option>
+          <option value="Cash">Cash</option>
+          <option value="Luxon Pay">Luxon Pay</option>
+          <option value="Paris TA">Paris TA</option>
+          <option value="Card">Card</option>
+        </select>
+      </div>
+      <button class="btn btn-gold" onclick="addEntry('travel')">Add</button>
+    </div>
+    <table class="entries-table" id="travel-table">
+      <thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>GBP equiv.</th><th>Status</th><th>Payment</th><th></th></tr></thead>
+      <tbody id="travel-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- HOTEL -->
+  <div class="section" id="section-hotel">
+    <div class="section-header">
+      <span class="section-title">Hotel</span>
+      <span class="section-total" id="hotel-total">£0.00</span>
+    </div>
+    <div class="add-form">
+      <div class="form-group">
+        <label>Description</label>
+        <input type="text" id="hotel-desc" placeholder="e.g. Venetian room + resort fee">
+      </div>
+      <div class="form-group">
+        <label>Amount</label>
+        <input type="number" id="hotel-amount" step="0.01" placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label>Currency</label>
+        <select id="hotel-currency">
+          <option value="GBP">£ GBP</option>
+          <option value="USD" selected>$ USD</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="hotel-paid">
+          <option value="unpaid">Unpaid</option>
+          <option value="paid">Paid</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Payment</label>
+        <select id="hotel-payment">
+          <option value="Wise">Wise</option>
+          <option value="Cash">Cash</option>
+          <option value="Luxon Pay">Luxon Pay</option>
+          <option value="Paris TA">Paris TA</option>
+          <option value="Card">Card</option>
+        </select>
+      </div>
+      <button class="btn btn-gold" onclick="addEntry('hotel')">Add</button>
+    </div>
+    <table class="entries-table" id="hotel-table">
+      <thead><tr><th>Description</th><th>Amount</th><th>GBP equiv.</th><th>Status</th><th>Payment</th><th></th></tr></thead>
+      <tbody id="hotel-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- FOOD -->
+  <div class="section" id="section-food">
+    <div class="section-header">
+      <span class="section-title">Food & Drink</span>
+      <span class="section-total" id="food-total">£0.00</span>
+    </div>
+    <div class="add-form">
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="food-date">
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <input type="text" id="food-desc" placeholder="e.g. Dinner at STK">
+      </div>
+      <div class="form-group">
+        <label>Amount</label>
+        <input type="number" id="food-amount" step="0.01" placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label>Currency</label>
+        <select id="food-currency">
+          <option value="GBP">£ GBP</option>
+          <option value="USD" selected>$ USD</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Payment</label>
+        <select id="food-payment">
+          <option value="Wise">Wise</option>
+          <option value="Cash">Cash</option>
+          <option value="Luxon Pay">Luxon Pay</option>
+          <option value="Paris TA">Paris TA</option>
+          <option value="Card">Card</option>
+        </select>
+      </div>
+      <button class="btn btn-gold" onclick="addEntry('food')">Add</button>
+    </div>
+    <table class="entries-table" id="food-table">
+      <thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>GBP equiv.</th><th>Payment</th><th></th></tr></thead>
+      <tbody id="food-tbody"></tbody>
+    </table>
+    <div id="food-daily-avg" style="margin-top:12px;font-size:12px;color:var(--text-dim);padding:10px 0;border-top:1px solid var(--border);"></div>
+  </div>
+
+  <!-- POKER -->
+  <div class="section" id="section-poker">
+    <div class="section-header">
+      <span class="section-title">Poker</span>
+      <span class="section-total" id="poker-total">£0.00</span>
+    </div>
+    <div class="add-form">
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="poker-date">
+      </div>
+      <div class="form-group" style="flex:2;min-width:180px;">
+        <label>Event / Tournament</label>
+        <input type="text" id="poker-event" placeholder="e.g. WSOP Daily Deepstack $250">
+      </div>
+      <div class="form-group">
+        <label>Venue</label>
+        <input type="text" id="poker-venue" placeholder="e.g. Rio, Aria">
+      </div>
+      <div class="form-group">
+        <label>Buy-in</label>
+        <input type="number" id="poker-buyin" step="0.01" placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label>Currency</label>
+        <select id="poker-currency">
+          <option value="GBP">£ GBP</option>
+          <option value="USD" selected>$ USD</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Return</label>
+        <input type="number" id="poker-return" step="0.01" placeholder="0.00" value="0">
+      </div>
+      <div class="form-group">
+        <label>Payment</label>
+        <select id="poker-payment">
+          <option value="Luxon Pay">Luxon Pay</option>
+          <option value="Paris TA">Paris TA</option>
+          <option value="Cash">Cash</option>
+          <option value="Wise">Wise</option>
+          <option value="Card">Card</option>
+        </select>
+      </div>
+      <button class="btn btn-gold" onclick="addEntry('poker')">Add</button>
+    </div>
+    <table class="entries-table" id="poker-table">
+      <thead><tr><th>Date</th><th>Event</th><th>Venue</th><th>Buy-in</th><th>Return</th><th>Net (GBP)</th><th>Payment</th><th></th></tr></thead>
+      <tbody id="poker-tbody"></tbody>
+    </table>
+    <div id="poker-summary" style="margin-top:12px;font-size:12px;color:var(--text-dim);padding:10px 0;border-top:1px solid var(--border);"></div>
+  </div>
+
+  <!-- CASINO -->
+  <div class="section" id="section-casino">
+    <div class="section-header">
+      <span class="section-title">Casino</span>
+      <span class="section-total" id="casino-total">£0.00</span>
+    </div>
+    <div class="add-form">
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="casino-date">
+      </div>
+      <div class="form-group">
+        <label>Type</label>
+        <select id="casino-type">
+          <option value="Table games">Table games</option>
+          <option value="Slots">Slots</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Venue / Note</label>
+        <input type="text" id="casino-venue" placeholder="e.g. Aria BJ">
+      </div>
+      <div class="form-group">
+        <label>Starting ($)</label>
+        <input type="number" id="casino-start" step="0.01" placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label>Finishing ($)</label>
+        <input type="number" id="casino-end" step="0.01" placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label>Payment</label>
+        <select id="casino-payment">
+          <option value="Cash">Cash</option>
+          <option value="Wise">Wise</option>
+          <option value="Luxon Pay">Luxon Pay</option>
+          <option value="Paris TA">Paris TA</option>
+          <option value="Card">Card</option>
+        </select>
+      </div>
+      <button class="btn btn-gold" onclick="addEntry('casino')">Add</button>
+    </div>
+    <table class="entries-table" id="casino-table">
+      <thead><tr><th>Date</th><th>Type</th><th>Venue</th><th>Start</th><th>Finish</th><th>Session net</th><th>GBP equiv.</th><th>Payment</th><th></th></tr></thead>
+      <tbody id="casino-tbody"></tbody>
+    </table>
+    <div id="casino-summary" style="margin-top:12px;font-size:12px;color:var(--text-dim);padding:10px 0;border-top:1px solid var(--border);"></div>
+  </div>
+
+  <!-- OTHER -->
+  <div class="section" id="section-other">
+    <div class="section-header">
+      <span class="section-title">Other</span>
+      <span class="section-total" id="other-total">£0.00</span>
+    </div>
+    <div class="add-form">
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="other-date">
+      </div>
+      <div class="form-group" style="flex:2;min-width:160px;">
+        <label>Description</label>
+        <input type="text" id="other-desc" placeholder="e.g. Tips, souvenirs, show tickets">
+      </div>
+      <div class="form-group">
+        <label>Amount</label>
+        <input type="number" id="other-amount" step="0.01" placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label>Currency</label>
+        <select id="other-currency">
+          <option value="GBP">£ GBP</option>
+          <option value="USD" selected>$ USD</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Payment</label>
+        <select id="other-payment">
+          <option value="Cash">Cash</option>
+          <option value="Wise">Wise</option>
+          <option value="Luxon Pay">Luxon Pay</option>
+          <option value="Paris TA">Paris TA</option>
+          <option value="Card">Card</option>
+        </select>
+      </div>
+      <button class="btn btn-gold" onclick="addEntry('other')">Add</button>
+    </div>
+    <table class="entries-table" id="other-table">
+      <thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>GBP equiv.</th><th>Payment</th><th></th></tr></thead>
+      <tbody id="other-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────
+const TRIP_START = new Date('2026-06-28');
+const TRIP_END   = new Date('2026-07-10');
+const TRIP_DAYS  = 13;
+
+let state = {
+  fxRate: 1.28,
+  fxUpdated: null,
+  budget: null,
+  travel: [],
+  hotel: [],
+  food: [],
+  poker: [],
+  casino: [],
+  other: []
+};
+
+// ── Persistence ────────────────────────────────────────────────────
+function save() {
+  localStorage.setItem('vegas_budget_v2', JSON.stringify(state));
+}
+
+function load() {
+  const raw = localStorage.getItem('vegas_budget_v2');
+  if (raw) {
+    try { state = { ...state, ...JSON.parse(raw) }; } catch(e) {}
+  }
+}
+
+// ── FX ────────────────────────────────────────────────────────────
+function toGBP(amount, currency) {
+  if (currency === 'GBP') return amount;
+  return amount / state.fxRate;
+}
+
+function fmt(amount, currency = 'GBP') {
+  if (currency === 'GBP') return '£' + amount.toFixed(2);
+  return '$' + amount.toFixed(2);
+}
+
+function saveFX() {
+  const val = parseFloat(document.getElementById('fxRate').value);
+  if (!isNaN(val) && val > 0) {
+    state.fxRate = val;
+    state.fxUpdated = new Date().toISOString();
+    save();
+    renderAll();
+  }
+}
+
+// ── IDs ───────────────────────────────────────────────────────────
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+// ── Add entries ───────────────────────────────────────────────────
+function addEntry(cat) {
+  let entry = { id: uid() };
+
+  if (cat === 'travel') {
+    entry.date = document.getElementById('travel-date').value;
+    entry.desc = document.getElementById('travel-desc').value.trim();
+    entry.amount = parseFloat(document.getElementById('travel-amount').value);
+    entry.currency = document.getElementById('travel-currency').value;
+    entry.paid = document.getElementById('travel-paid').value;
+    entry.payment = document.getElementById('travel-payment').value;
+    if (!entry.desc || isNaN(entry.amount) || entry.amount <= 0) return alert('Please fill in description and a valid amount.');
+    document.getElementById('travel-desc').value = '';
+    document.getElementById('travel-amount').value = '';
+  }
+
+  if (cat === 'hotel') {
+    entry.desc = document.getElementById('hotel-desc').value.trim();
+    entry.amount = parseFloat(document.getElementById('hotel-amount').value);
+    entry.currency = document.getElementById('hotel-currency').value;
+    entry.paid = document.getElementById('hotel-paid').value;
+    entry.payment = document.getElementById('hotel-payment').value;
+    if (!entry.desc || isNaN(entry.amount) || entry.amount <= 0) return alert('Please fill in description and a valid amount.');
+    document.getElementById('hotel-desc').value = '';
+    document.getElementById('hotel-amount').value = '';
+  }
+
+  if (cat === 'food') {
+    entry.date = document.getElementById('food-date').value;
+    entry.desc = document.getElementById('food-desc').value.trim();
+    entry.amount = parseFloat(document.getElementById('food-amount').value);
+    entry.currency = document.getElementById('food-currency').value;
+    entry.payment = document.getElementById('food-payment').value;
+    if (!entry.desc || isNaN(entry.amount) || entry.amount <= 0) return alert('Please fill in description and a valid amount.');
+    document.getElementById('food-desc').value = '';
+    document.getElementById('food-amount').value = '';
+  }
+
+  if (cat === 'poker') {
+    entry.date = document.getElementById('poker-date').value;
+    entry.event = document.getElementById('poker-event').value.trim();
+    entry.venue = document.getElementById('poker-venue').value.trim();
+    entry.buyin = parseFloat(document.getElementById('poker-buyin').value);
+    entry.currency = document.getElementById('poker-currency').value;
+    entry.returnAmt = parseFloat(document.getElementById('poker-return').value) || 0;
+    entry.payment = document.getElementById('poker-payment').value;
+    if (!entry.event || isNaN(entry.buyin) || entry.buyin <= 0) return alert('Please fill in event name and buy-in.');
+    document.getElementById('poker-event').value = '';
+    document.getElementById('poker-venue').value = '';
+    document.getElementById('poker-buyin').value = '';
+    document.getElementById('poker-return').value = '0';
+  }
+
+  if (cat === 'casino') {
+    entry.date = document.getElementById('casino-date').value;
+    entry.type = document.getElementById('casino-type').value;
+    entry.venue = document.getElementById('casino-venue').value.trim();
+    entry.start = parseFloat(document.getElementById('casino-start').value);
+    entry.end = parseFloat(document.getElementById('casino-end').value);
+    entry.payment = document.getElementById('casino-payment').value;
+    if (isNaN(entry.start) || isNaN(entry.end)) return alert('Please enter starting and finishing amounts.');
+    document.getElementById('casino-venue').value = '';
+    document.getElementById('casino-start').value = '';
+    document.getElementById('casino-end').value = '';
+  }
+
+  if (cat === 'other') {
+    entry.date = document.getElementById('other-date').value;
+    entry.desc = document.getElementById('other-desc').value.trim();
+    entry.amount = parseFloat(document.getElementById('other-amount').value);
+    entry.currency = document.getElementById('other-currency').value;
+    entry.payment = document.getElementById('other-payment').value;
+    if (!entry.desc || isNaN(entry.amount) || entry.amount <= 0) return alert('Please fill in description and a valid amount.');
+    document.getElementById('other-desc').value = '';
+    document.getElementById('other-amount').value = '';
+  }
+
+  state[cat].push(entry);
+  save();
+  renderAll();
+}
+
+function deleteEntry(cat, id) {
+  state[cat] = state[cat].filter(e => e.id !== id);
+  save();
+  renderAll();
+}
+
+// ── Category totals (net cost in GBP) ────────────────────────────
+function catTotal(cat) {
+  if (cat === 'travel') {
+    return state.travel.reduce((s, e) => s + toGBP(e.amount, e.currency), 0);
+  }
+  if (cat === 'hotel') {
+    return state.hotel.reduce((s, e) => s + toGBP(e.amount, e.currency), 0);
+  }
+  if (cat === 'food') {
+    return state.food.reduce((s, e) => s + toGBP(e.amount, e.currency), 0);
+  }
+  if (cat === 'poker') {
+    // net spend = sum of (buyin - return)
+    return state.poker.reduce((s, e) => {
+      const netUSD = e.buyin - e.returnAmt;
+      return s + toGBP(netUSD, e.currency);
+    }, 0);
+  }
+  if (cat === 'casino') {
+    // net spend = sum of (start - end) if negative, it's a win (negative cost)
+    return state.casino.reduce((s, e) => {
+      const netUSD = e.start - e.end; // positive = lost money
+      return s + toGBP(netUSD, 'USD');
+    }, 0);
+  }
+  if (cat === 'other') {
+    return state.other.reduce((s, e) => s + toGBP(e.amount, e.currency), 0);
+  }
+  return 0;
+}
+
+function totalSpent() {
+  return ['travel','hotel','food','poker','casino','other'].reduce((s, c) => s + catTotal(c), 0);
+}
+
+// Gambling winnings minus losses (positive = net win)
+function gamblingPnL() {
+  const pokerPnL = -catTotal('poker');   // catTotal poker is net cost; negate for P&L
+  const casinoPnL = -catTotal('casino'); // same
+  return pokerPnL + casinoPnL;
+}
+
+// Net position = budget - non-gambling spend + gambling P&L
+function netPosition() {
+  if (!state.budget) return null;
+  const nonGambling = catTotal('travel') + catTotal('hotel') + catTotal('food');
+  return state.budget - nonGambling + gamblingPnL();
+}
+
+// ── Render ────────────────────────────────────────────────────────
+function renderAll() {
+  // FX display
+  document.getElementById('fxRate').value = state.fxRate;
+  if (state.fxUpdated) {
+    const d = new Date(state.fxUpdated);
+    document.getElementById('fxUpdated').textContent = 'updated ' + d.toLocaleDateString('en-GB', {day:'numeric',month:'short'});
+  }
+
+  renderDashboard();
+  renderNav();
+  renderSection('travel');
+  renderSection('hotel');
+  renderSection('food');
+  renderSection('poker');
+  renderSection('casino');
+  renderSection('other');
+  renderOverview();
+}
+
+function renderDashboard() {
+  const spent = totalSpent();
+  const budget = state.budget;
+  const today = new Date();
+  const daysElapsed = Math.max(0, Math.min(TRIP_DAYS, Math.floor((today - TRIP_START) / 86400000)));
+  const daysLeft = Math.max(0, TRIP_DAYS - daysElapsed);
+  const dailyRate = daysElapsed > 0 ? spent / daysElapsed : 0;
+  const projected = daysElapsed > 0 ? dailyRate * TRIP_DAYS : spent;
+  const remaining = budget ? budget - spent : null;
+
+  let projClass = 'gold';
+  if (budget) {
+    if (projected > budget * 1.1) projClass = 'red';
+    else if (projected > budget) projClass = 'amber';
+    else projClass = 'green';
+  }
+
+  const net = netPosition();
+  const pnl = gamblingPnL();
+
+  document.getElementById('dashboard').innerHTML = `
+    <div class="kpi">
+      <div class="kpi-label">Total spent (GBP)</div>
+      <div class="kpi-value">£${spent.toFixed(0)}</div>
+      <div class="kpi-sub">${daysElapsed} of ${TRIP_DAYS} days</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Remaining budget</div>
+      <div class="kpi-value ${remaining !== null ? (remaining < 0 ? 'red' : 'green') : 'gold'}">${remaining !== null ? '£' + remaining.toFixed(0) : '—'}</div>
+      <div class="kpi-sub">${budget ? 'of £' + budget.toLocaleString() : 'Set budget in bar above'}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Net position</div>
+      <div class="kpi-value ${net === null ? 'gold' : net > 0 ? 'green' : 'red'}">${net === null ? '—' : (net >= 0 ? '+£' : '-£') + Math.abs(net).toFixed(0)}</div>
+      <div class="kpi-sub">${pnl !== 0 ? (pnl > 0 ? '+£'+pnl.toFixed(0)+' gambling win' : '-£'+Math.abs(pnl).toFixed(0)+' gambling loss') : 'after gambling P&L'}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Daily burn rate</div>
+      <div class="kpi-value">${daysElapsed > 0 ? '£' + dailyRate.toFixed(0) : '—'}</div>
+      <div class="kpi-sub">per day so far</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Projected total</div>
+      <div class="kpi-value ${projClass}">${daysElapsed > 0 ? '£' + projected.toFixed(0) : '—'}</div>
+      <div class="kpi-sub">${daysLeft} days remaining</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Poker net (GBP)</div>
+      <div class="kpi-value ${catTotal('poker') > 0 ? 'red' : catTotal('poker') < 0 ? 'green' : ''}">${catTotal('poker') >= 0 ? '-£'+catTotal('poker').toFixed(0) : '+£'+Math.abs(catTotal('poker')).toFixed(0)}</div>
+      <div class="kpi-sub">${state.poker.length} tournament${state.poker.length !== 1 ? 's' : ''}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Casino net (GBP)</div>
+      <div class="kpi-value ${catTotal('casino') > 0 ? 'red' : catTotal('casino') < 0 ? 'green' : ''}">${catTotal('casino') >= 0 ? '-£'+catTotal('casino').toFixed(0) : '+£'+Math.abs(catTotal('casino')).toFixed(0)}</div>
+      <div class="kpi-sub">${state.casino.length} session${state.casino.length !== 1 ? 's' : ''}</div>
+    </div>
+  `;
+
+  // Budget bar — colour driven by net position, not just spend %
+  const net2 = netPosition();
+  const pct = budget ? Math.min(100, (spent / budget) * 100) : 0;
+  const fill = document.getElementById('budgetBarFill');
+  fill.style.width = Math.min(pct, 100) + '%';
+  if (net2 === null) {
+    fill.style.background = 'var(--gold)';
+  } else if (net2 > budget) {
+    fill.style.background = 'var(--green)';   // winning — comfortably ahead
+  } else if (net2 > 0) {
+    fill.style.background = 'var(--amber)';   // within budget
+  } else {
+    fill.style.background = 'var(--red)';     // in the red
+  }
+  document.getElementById('barLabel').textContent = budget ? `£${spent.toFixed(0)} spent · net ${net2 >= 0 ? '+£' : '-£'}${Math.abs(net2).toFixed(0)} (${pct.toFixed(0)}%)` : 'enter budget →';
+  const barInput = document.getElementById('budgetBarInput');
+  if (barInput && state.budget) barInput.value = state.budget;
+}
+
+function renderNav() {
+  const cats = ['travel','hotel','food','poker','casino','other'];
+  cats.forEach(c => {
+    const el = document.getElementById('nav-' + c);
+    if (el) {
+      const t = catTotal(c);
+      el.textContent = (t >= 0 ? '£' : '+£') + Math.abs(t).toFixed(0);
+    }
+  });
+}
+
+function renderSection(cat) {
+  const totalEl = document.getElementById(cat + '-total');
+  if (totalEl) {
+    const t = catTotal(cat);
+    totalEl.textContent = (t >= 0 ? '£' : '+£') + Math.abs(t).toFixed(2);
+    totalEl.style.color = (cat === 'poker' || cat === 'casino') && t < 0 ? 'var(--green)' : 'var(--gold)';
+  }
+
+  const tbody = document.getElementById(cat + '-tbody');
+  if (!tbody) return;
+
+  if (cat === 'travel') {
+    if (!state.travel.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No entries yet. Add your first travel cost above.</td></tr>'; return; }
+    tbody.innerHTML = state.travel.map(e => `
+      <tr>
+        <td>${e.date || '—'}</td>
+        <td>${e.desc}</td>
+        <td class="mono"><span class="tag ${e.currency === 'GBP' ? 'tag-gbp' : 'tag-usd'}">${e.currency}</span> ${e.currency === 'GBP' ? '£' : '$'}${e.amount.toFixed(2)}</td>
+        <td class="mono">£${toGBP(e.amount, e.currency).toFixed(2)}</td>
+        <td><span class="tag tag-neutral">${e.paid || 'unpaid'}</span></td>
+        <td><span class="tag tag-neutral">${e.payment || '—'}</span></td>
+        <td><button class="btn-danger" onclick="deleteEntry('travel','${e.id}')">×</button></td>
+      </tr>`).join('');
+  }
+
+  if (cat === 'hotel') {
+    if (!state.hotel.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No entries yet.</td></tr>'; return; }
+    tbody.innerHTML = state.hotel.map(e => `
+      <tr>
+        <td>${e.desc}</td>
+        <td class="mono"><span class="tag ${e.currency === 'GBP' ? 'tag-gbp' : 'tag-usd'}">${e.currency}</span> ${e.currency === 'GBP' ? '£' : '$'}${e.amount.toFixed(2)}</td>
+        <td class="mono">£${toGBP(e.amount, e.currency).toFixed(2)}</td>
+        <td><span class="tag ${e.paid === 'paid' ? 'tag-win' : 'tag-loss'}">${e.paid}</span></td>
+        <td><span class="tag tag-neutral">${e.payment || '—'}</span></td>
+        <td><button class="btn-danger" onclick="deleteEntry('hotel','${e.id}')">×</button></td>
+      </tr>`).join('');
+  }
+
+  if (cat === 'food') {
+    if (!state.food.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No entries yet.</td></tr>'; return; }
+    tbody.innerHTML = state.food.map(e => `
+      <tr>
+        <td>${e.date || '—'}</td>
+        <td>${e.desc}</td>
+        <td class="mono"><span class="tag ${e.currency === 'GBP' ? 'tag-gbp' : 'tag-usd'}">${e.currency}</span> ${e.currency === 'GBP' ? '£' : '$'}${e.amount.toFixed(2)}</td>
+        <td class="mono">£${toGBP(e.amount, e.currency).toFixed(2)}</td>
+        <td><span class="tag tag-neutral">${e.payment || '—'}</span></td>
+        <td><button class="btn-danger" onclick="deleteEntry('food','${e.id}')">×</button></td>
+      </tr>`).join('');
+    const total = catTotal('food');
+    const n = state.food.length;
+    document.getElementById('food-daily-avg').textContent = n > 0 ? `${n} entries · avg £${(total/n).toFixed(2)} per item` : '';
+  }
+
+  if (cat === 'poker') {
+    if (!state.poker.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No entries yet. Add your first tournament above.</td></tr>'; return; }
+    tbody.innerHTML = state.poker.map(e => {
+      const netGBP = toGBP(e.buyin - e.returnAmt, e.currency);
+      const netClass = netGBP > 0 ? 'net-negative' : netGBP < 0 ? 'net-positive' : 'net-neutral';
+      const netStr = netGBP > 0 ? '-£'+netGBP.toFixed(2) : netGBP < 0 ? '+£'+Math.abs(netGBP).toFixed(2) : '£0.00';
+      return `<tr>
+        <td>${e.date || '—'}</td>
+        <td>${e.event}</td>
+        <td>${e.venue || '—'}</td>
+        <td class="mono">${e.currency === 'GBP' ? '£' : '$'}${e.buyin.toFixed(2)}</td>
+        <td class="mono">${e.returnAmt > 0 ? (e.currency === 'GBP' ? '£' : '$')+e.returnAmt.toFixed(2) : '<span style="color:var(--text-faint)">bust</span>'}</td>
+        <td class="${netClass}">${netStr}</td>
+        <td><span class="tag tag-neutral">${e.payment || '—'}</span></td>
+        <td><button class="btn-danger" onclick="deleteEntry('poker','${e.id}')">×</button></td>
+      </tr>`;
+    }).join('');
+    const netTotal = catTotal('poker');
+    const entered = state.poker.length;
+    const cashed = state.poker.filter(e => e.returnAmt > 0).length;
+    document.getElementById('poker-summary').innerHTML = `${entered} tournament${entered!==1?'s':''} · ${cashed} cash${cashed!==1?'es':''} · <span class="${netTotal > 0 ? 'net-negative' : netTotal < 0 ? 'net-positive' : ''}">net ${netTotal > 0 ? '-£'+netTotal.toFixed(2) : netTotal < 0 ? '+£'+Math.abs(netTotal).toFixed(2) : '£0.00'}</span>`;
+  }
+
+  if (cat === 'casino') {
+    if (!state.casino.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No sessions yet. Add your first session above.</td></tr>'; return; }
+    tbody.innerHTML = state.casino.map(e => {
+      const sessionNet = e.end - e.start; // positive = win
+      const netGBP = toGBP(Math.abs(sessionNet), 'USD');
+      const isWin = sessionNet > 0;
+      const isNeutral = sessionNet === 0;
+      const sessionStr = isNeutral ? '—' : (isWin ? '+$'+sessionNet.toFixed(2) : '-$'+Math.abs(sessionNet).toFixed(2));
+      const sessionClass = isWin ? 'net-positive' : isNeutral ? 'net-neutral' : 'net-negative';
+      const gbpStr = isNeutral ? '—' : (isWin ? '+£'+netGBP.toFixed(2) : '-£'+netGBP.toFixed(2));
+      const gbpClass = isWin ? 'net-positive' : isNeutral ? 'net-neutral' : 'net-negative';
+      return `<tr>
+        <td>${e.date || '—'}</td>
+        <td>${e.type}</td>
+        <td>${e.venue || '—'}</td>
+        <td class="mono">$${e.start.toFixed(2)}</td>
+        <td class="mono">$${e.end.toFixed(2)}</td>
+        <td class="${sessionClass}">${sessionStr}</td>
+        <td class="${gbpClass}">${gbpStr}</td>
+        <td><span class="tag tag-neutral">${e.payment || '—'}</span></td>
+        <td><button class="btn-danger" onclick="deleteEntry('casino','${e.id}')">×</button></td>
+      </tr>`;
+    }).join('');
+    const netTotal = catTotal('casino'); // positive = net loss
+    const sessions = state.casino.length;
+    const wins = state.casino.filter(e => e.end > e.start).length;
+    document.getElementById('casino-summary').innerHTML = `${sessions} session${sessions!==1?'s':''} · ${wins} winning · <span class="${netTotal > 0 ? 'net-negative' : netTotal < 0 ? 'net-positive' : ''}">net ${netTotal > 0 ? '-£'+netTotal.toFixed(2) : netTotal < 0 ? '+£'+Math.abs(netTotal).toFixed(2) : '£0.00'}</span>`;
+  }
+
+  if (cat === 'other') {
+    if (!state.other.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No entries yet.</td></tr>'; return; }
+    tbody.innerHTML = state.other.map(e => `
+      <tr>
+        <td>${e.date || '—'}</td>
+        <td>${e.desc}</td>
+        <td class="mono"><span class="tag ${e.currency === 'GBP' ? 'tag-gbp' : 'tag-usd'}">${e.currency}</span> ${e.currency === 'GBP' ? '£' : '$'}${e.amount.toFixed(2)}</td>
+        <td class="mono">£${toGBP(e.amount, e.currency).toFixed(2)}</td>
+        <td><span class="tag tag-neutral">${e.payment || '—'}</span></td>
+        <td><button class="btn-danger" onclick="deleteEntry('other','${e.id}')">×</button></td>
+      </tr>`).join('');
+  }
+}
+
+function renderOverview() {
+  const cats = [
+    { key: 'travel', label: 'Travel' },
+    { key: 'hotel', label: 'Hotel' },
+    { key: 'food', label: 'Food & Drink' },
+    { key: 'poker', label: 'Poker (net)' },
+    { key: 'casino', label: 'Casino (net)' },
+    { key: 'other', label: 'Other' },
+  ];
+
+  const totals = cats.map(c => ({ ...c, val: Math.max(0, catTotal(c.key)) }));
+  const maxVal = Math.max(...totals.map(t => t.val), 1);
+  const grandTotal = totalSpent();
+
+  // Payment method breakdown
+  const methods = ['Wise','Cash','Luxon Pay','Paris TA','Card'];
+  const paymentTotals = {};
+  methods.forEach(m => paymentTotals[m] = 0);
+
+  const allEntries = [
+    ...state.travel.map(e => ({ gbp: toGBP(e.amount, e.currency), payment: e.payment })),
+    ...state.hotel.map(e => ({ gbp: toGBP(e.amount, e.currency), payment: e.payment })),
+    ...state.food.map(e => ({ gbp: toGBP(e.amount, e.currency), payment: e.payment })),
+    ...state.other.map(e => ({ gbp: toGBP(e.amount, e.currency), payment: e.payment })),
+    ...state.poker.map(e => ({ gbp: toGBP(Math.max(0, e.buyin - e.returnAmt), e.currency), payment: e.payment })),
+    ...state.casino.map(e => ({ gbp: toGBP(Math.max(0, e.start - e.end), 'USD'), payment: e.payment })),
+  ];
+  allEntries.forEach(e => {
+    if (e.payment && paymentTotals[e.payment] !== undefined) paymentTotals[e.payment] += e.gbp;
+  });
+  const maxPay = Math.max(...Object.values(paymentTotals), 1);
+  const payBreakdown = methods.filter(m => paymentTotals[m] > 0).map(m => `
+    <div class="cat-row">
+      <div class="cat-label">${m}</div>
+      <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${(paymentTotals[m]/maxPay*100).toFixed(1)}%;background:var(--blue);"></div></div>
+      <div class="cat-amount">£${paymentTotals[m].toFixed(0)}</div>
+    </div>`).join('') || '<div style="color:var(--text-faint);font-size:12px;padding:8px 0;">No entries yet.</div>';
+
+  document.getElementById('catBreakdown').innerHTML = `
+    <div style="font-size:11px;color:var(--text-faint);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px;">Spend by category</div>
+    ${totals.map(t => `
+    <div class="cat-row">
+      <div class="cat-label">${t.label}</div>
+      <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${(t.val/maxVal*100).toFixed(1)}%"></div></div>
+      <div class="cat-amount">£${t.val.toFixed(0)}</div>
+    </div>`).join('')}
+    <div style="font-size:11px;color:var(--text-faint);letter-spacing:0.08em;text-transform:uppercase;margin:20px 0 12px;">Spend by payment method</div>
+    ${payBreakdown}
+  `;
+
+  const today = new Date();
+  const daysElapsed = Math.max(0, Math.min(TRIP_DAYS, Math.floor((today - TRIP_START) / 86400000)));
+  const daysLeft = TRIP_DAYS - daysElapsed;
+  const dailyRate = daysElapsed > 0 ? grandTotal / daysElapsed : 0;
+  const projected = daysElapsed > 0 ? dailyRate * TRIP_DAYS : grandTotal;
+  const budget = state.budget;
+  const variance = budget ? projected - budget : null;
+
+  document.getElementById('forecastNote').innerHTML = daysElapsed > 0 ? `
+    <strong>Forecast</strong> — at your current daily rate of <strong>£${dailyRate.toFixed(0)}/day</strong>, 
+    you're on track to spend <strong>£${projected.toFixed(0)}</strong> by Jul 10.
+    ${variance !== null ? (variance > 0
+      ? `That's <strong style="color:var(--red)">£${variance.toFixed(0)} over</strong> your £${budget.toLocaleString()} budget.`
+      : `That's <strong style="color:var(--green)">£${Math.abs(variance).toFixed(0)} under</strong> your £${budget.toLocaleString()} budget.`)
+    : 'Set a budget above to see variance.'}
+    ${daysLeft > 0 ? `<br><strong>${daysLeft} days</strong> remaining — implied daily budget: <strong>£${budget ? ((budget - grandTotal)/daysLeft).toFixed(0) : '—'}</strong>/day.` : ''}
+  ` : `<strong>Trip hasn't started yet.</strong> Add entries once you're underway — forecasting kicks in after day 1.`;
+}
+
+function saveBudgetInline() {
+  const val = parseFloat(document.getElementById('budgetBarInput').value);
+  if (!isNaN(val) && val > 0) {
+    state.budget = val;
+    save();
+    renderAll();
+  }
+}
+
+function resetAll() {
+  if (confirm('Reset all data? This will clear every entry and cannot be undone.')) {
+    localStorage.removeItem('vegas_budget_v2');
+    state = {
+      fxRate: 1.28,
+      fxUpdated: null,
+      budget: null,
+      travel: [],
+      hotel: [],
+      food: [],
+      poker: [],
+      casino: [],
+      other: []
+    };
+    renderAll();
+  }
+}
+
+function switchSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('section-' + name).classList.add('active');
+  document.querySelector(`[data-section="${name}"]`).classList.add('active');
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+load();
+renderAll();
+</script>
+</body>
+</html>
