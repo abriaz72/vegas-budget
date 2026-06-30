@@ -551,10 +551,17 @@
           <option value="Card">Card</option>
         </select>
       </div>
+      <div class="form-group">
+        <label>Pre-trip?</label>
+        <select id="travel-pretrip">
+          <option value="false">No</option>
+          <option value="true">Yes</option>
+        </select>
+      </div>
       <button class="btn btn-gold" onclick="addEntry('travel')">Add</button>
     </div>
     <table class="entries-table" id="travel-table">
-      <thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>GBP equiv.</th><th>Status</th><th>Payment</th><th></th></tr></thead>
+      <thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>GBP equiv.</th><th>Status</th><th>Payment</th><th>Pre-trip</th><th></th></tr></thead>
       <tbody id="travel-tbody"></tbody>
     </table>
   </div>
@@ -863,6 +870,7 @@ function addEntry(cat) {
     entry.currency = document.getElementById('travel-currency').value;
     entry.paid = document.getElementById('travel-paid').value;
     entry.payment = document.getElementById('travel-payment').value;
+    entry.preTrip = document.getElementById('travel-pretrip').value === 'true';
     if (!entry.desc || isNaN(entry.amount) || entry.amount <= 0) return alert('Please fill in description and a valid amount.');
     document.getElementById('travel-desc').value = '';
     document.getElementById('travel-amount').value = '';
@@ -874,6 +882,7 @@ function addEntry(cat) {
     entry.currency = document.getElementById('hotel-currency').value;
     entry.paid = document.getElementById('hotel-paid').value;
     entry.payment = document.getElementById('hotel-payment').value;
+    entry.preTrip = true; // hotel total is always a fixed, pre-known cost
     if (!entry.desc || isNaN(entry.amount) || entry.amount <= 0) return alert('Please fill in description and a valid amount.');
     document.getElementById('hotel-desc').value = '';
     document.getElementById('hotel-amount').value = '';
@@ -940,6 +949,15 @@ function deleteEntry(cat, id) {
   renderAll();
 }
 
+function togglePreTrip(id) {
+  const entry = state.travel.find(e => e.id === id);
+  if (entry) {
+    entry.preTrip = !entry.preTrip;
+    save();
+    renderAll();
+  }
+}
+
 // ── Category totals (net cost in GBP) ────────────────────────────
 function catTotal(cat) {
   if (cat === 'travel') {
@@ -973,6 +991,19 @@ function catTotal(cat) {
 
 function totalSpent() {
   return ['travel','hotel','food','poker','casino','other'].reduce((s, c) => s + catTotal(c), 0);
+}
+
+// Spend used for daily burn rate / projection — excludes pre-trip fixed costs (flights, hotel total)
+function burnRateSpend() {
+  const travelInTrip = state.travel.reduce((s, e) => e.preTrip ? s : s + toGBP(e.amount, e.currency), 0);
+  const hotelInTrip = 0; // hotel is always pre-trip
+  return travelInTrip + hotelInTrip + catTotal('food') + catTotal('poker') + catTotal('casino') + catTotal('other');
+}
+
+// Total of pre-trip fixed costs (for display)
+function preTripTotal() {
+  const travelPre = state.travel.reduce((s, e) => e.preTrip ? s + toGBP(e.amount, e.currency) : s, 0);
+  return travelPre + catTotal('hotel');
 }
 
 // Gambling winnings minus losses (positive = net win)
@@ -1011,12 +1042,14 @@ function renderAll() {
 
 function renderDashboard() {
   const spent = totalSpent();
+  const burnSpend = burnRateSpend();
+  const preTrip = preTripTotal();
   const budget = state.budget;
   const today = new Date();
   const daysElapsed = Math.max(0, Math.min(TRIP_DAYS, Math.floor((today - TRIP_START) / 86400000)));
   const daysLeft = Math.max(0, TRIP_DAYS - daysElapsed);
-  const dailyRate = daysElapsed > 0 ? spent / daysElapsed : 0;
-  const projected = daysElapsed > 0 ? dailyRate * TRIP_DAYS : spent;
+  const dailyRate = daysElapsed > 0 ? burnSpend / daysElapsed : 0;
+  const projected = daysElapsed > 0 ? (dailyRate * TRIP_DAYS) + preTrip : spent;
   const remaining = budget ? budget - spent : null;
 
   let projClass = 'gold';
@@ -1048,12 +1081,12 @@ function renderDashboard() {
     <div class="kpi">
       <div class="kpi-label">Daily burn rate</div>
       <div class="kpi-value">${daysElapsed > 0 ? '£' + dailyRate.toFixed(0) : '—'}</div>
-      <div class="kpi-sub">per day so far</div>
+      <div class="kpi-sub">excl. flights/hotel</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">Projected total</div>
       <div class="kpi-value ${projClass}">${daysElapsed > 0 ? '£' + projected.toFixed(0) : '—'}</div>
-      <div class="kpi-sub">${daysLeft} days remaining</div>
+      <div class="kpi-sub">incl. £${preTrip.toFixed(0)} fixed costs</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">Poker net (GBP)</div>
@@ -1109,7 +1142,7 @@ function renderSection(cat) {
   if (!tbody) return;
 
   if (cat === 'travel') {
-    if (!state.travel.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No entries yet. Add your first travel cost above.</td></tr>'; return; }
+    if (!state.travel.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No entries yet. Add your first travel cost above.</td></tr>'; return; }
     tbody.innerHTML = state.travel.map(e => `
       <tr>
         <td>${e.date || '—'}</td>
@@ -1118,6 +1151,7 @@ function renderSection(cat) {
         <td class="mono">£${toGBP(e.amount, e.currency).toFixed(2)}</td>
         <td><span class="tag tag-neutral">${e.paid || 'unpaid'}</span></td>
         <td><span class="tag tag-neutral">${e.payment || '—'}</span></td>
+        <td><span class="tag ${e.preTrip ? 'tag-win' : 'tag-neutral'}" style="cursor:pointer;" onclick="togglePreTrip('${e.id}')" title="Click to toggle">${e.preTrip ? 'Pre-trip' : 'In-trip'}</span></td>
         <td><button class="btn-danger" onclick="deleteEntry('travel','${e.id}')">×</button></td>
       </tr>`).join('');
   }
@@ -1270,14 +1304,16 @@ function renderOverview() {
   const today = new Date();
   const daysElapsed = Math.max(0, Math.min(TRIP_DAYS, Math.floor((today - TRIP_START) / 86400000)));
   const daysLeft = TRIP_DAYS - daysElapsed;
-  const dailyRate = daysElapsed > 0 ? grandTotal / daysElapsed : 0;
-  const projected = daysElapsed > 0 ? dailyRate * TRIP_DAYS : grandTotal;
+  const burnSpend = burnRateSpend();
+  const preTrip = preTripTotal();
+  const dailyRate = daysElapsed > 0 ? burnSpend / daysElapsed : 0;
+  const projected = daysElapsed > 0 ? (dailyRate * TRIP_DAYS) + preTrip : grandTotal;
   const budget = state.budget;
   const variance = budget ? projected - budget : null;
 
   document.getElementById('forecastNote').innerHTML = daysElapsed > 0 ? `
-    <strong>Forecast</strong> — at your current daily rate of <strong>£${dailyRate.toFixed(0)}/day</strong>, 
-    you're on track to spend <strong>£${projected.toFixed(0)}</strong> by Jul 10.
+    <strong>Forecast</strong> — at your current daily rate of <strong>£${dailyRate.toFixed(0)}/day</strong> (excluding flights/hotel),
+    plus <strong>£${preTrip.toFixed(0)}</strong> in fixed pre-trip costs, you're on track to spend <strong>£${projected.toFixed(0)}</strong> by Jul 10.
     ${variance !== null ? (variance > 0
       ? `That's <strong style="color:var(--red)">£${variance.toFixed(0)} over</strong> your £${budget.toLocaleString()} budget.`
       : `That's <strong style="color:var(--green)">£${Math.abs(variance).toFixed(0)} under</strong> your £${budget.toLocaleString()} budget.`)
